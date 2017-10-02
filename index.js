@@ -15,7 +15,12 @@ const ExtractJwt = passportJWT.ExtractJwt;
 const JwtStrategy = passportJWT.Strategy;
 
 const Sequelize = require('sequelize');
+
 var app = express();
+
+var sequelizeRouter = require('sequelize-router');
+
+
 let sequelize = new Sequelize('nodecms', 'root', '', {
     host: 'localhost',
     dialect: 'mysql',
@@ -42,7 +47,8 @@ let sequelize = new Sequelize('nodecms', 'root', '', {
 
 //controllers
 const AuthController = require("./app/controllers/LoginController.js")(sequelize);
-
+//models
+const User = require("./app/models/User.js")(sequelize);
 
 var jwtOptions = {}
 jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken(); 
@@ -51,16 +57,15 @@ jwtOptions.secretOrKey = env.parsed.APP_KEY;
 var strategy = new JwtStrategy(jwtOptions, function(jwt_payload, next) {
   console.log('payload received', jwt_payload);
   console.log('mid',jwt_payload.id);
+  
   User.findById(jwt_payload.id).then(user => {
     if (user) {
         next(null, user);
       } else {
         next(null, false);
       }
-    console.log('user => ',user);
+    console.log('user with id of ',user.dataValues.id, ' is accessing api');
   })
-  console.log('------------------------------------');
-
 });
 
 passport.use(strategy);
@@ -85,9 +90,11 @@ app.post("/login", AuthController.login);
 app.post("/register", AuthController.register);
 
 app.get("/secret", passport.authenticate('jwt', { session: false }), function(req, res){
+
   return res.json({message: "Success! You can not see this without a token"});
 });
 
+app.use('/api', sequelizeRouter(User)); 
 
 app.listen(3000, function() {
   console.log("Express running port 3000!");

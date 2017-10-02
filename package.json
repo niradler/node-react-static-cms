@@ -16,6 +16,10 @@
     "mysql2": "^1.4.2",
     "passport": "^0.4.0",
     "passport-jwt": "^3.0.0",
-    "sequelize": "^4.11.3"
+    "sequelize": "^4.13.2",
+    "sequelize-router": "^1.0.6"
+  },
+  "devDependencies": {
+    "sequelize-cli": "^3.0.0"
   }
 }

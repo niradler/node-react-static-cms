@@ -18,7 +18,7 @@
             
                   if(user[0].dataValues.password === req.body.password) {
                       // from now on we'll identify the user by the id and the id is the only personalized value that goes into our token
-                      var payload = {id: user.id};
+                      var payload = {id: user[0].dataValues.id};
                       var token = jwt.sign(payload, env.parsed.APP_KEY);
                       return res.json({message: "ok", token: token});
                     } else {

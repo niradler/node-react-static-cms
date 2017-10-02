@@ -15,7 +15,7 @@ const ExtractJwt = passportJWT.ExtractJwt;
 const JwtStrategy = passportJWT.Strategy;
 
 const Sequelize = require('sequelize');
-
+var app = express();
 let sequelize = new Sequelize('nodecms', 'root', '', {
     host: 'localhost',
     dialect: 'mysql',
@@ -50,7 +50,6 @@ jwtOptions.secretOrKey = env.parsed.APP_KEY;
 
 var strategy = new JwtStrategy(jwtOptions, function(jwt_payload, next) {
   console.log('payload received', jwt_payload);
-  //const User = require("./app/models/User.js")(sequelize);
   console.log('mid',jwt_payload.id);
   User.findById(jwt_payload.id).then(user => {
     if (user) {
@@ -58,15 +57,15 @@ var strategy = new JwtStrategy(jwtOptions, function(jwt_payload, next) {
       } else {
         next(null, false);
       }
-    console.log('user',user);
+    console.log('user => ',user);
   })
-
+  console.log('------------------------------------');
 
 });
 
 passport.use(strategy);
 
-var app = express();
+
 app.use(passport.initialize());
 
 // parse application/x-www-form-urlencoded
@@ -79,15 +78,14 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json())
 
 app.get("/", function(req, res) {
-  res.json({message: "Express is up!"});
-  
+ return res.json({message: "Express is up!"}); 
 });
 
 app.post("/login", AuthController.login);
 app.post("/register", AuthController.register);
 
 app.get("/secret", passport.authenticate('jwt', { session: false }), function(req, res){
-  res.json({message: "Success! You can not see this without a token"});
+  return res.json({message: "Success! You can not see this without a token"});
 });
 
 

@@ -2,24 +2,26 @@
 ------------------------------------------------------
 */
 // file: index.js
+const env = require('dotenv').config();
+const _ = require("lodash");
+const express = require("express");
+const bodyParser = require("body-parser");
+const jwt = require('jsonwebtoken');
 
-var _ = require("lodash");
-var express = require("express");
-var bodyParser = require("body-parser");
-var jwt = require('jsonwebtoken');
+const passport = require("passport");
+const passportJWT = require("passport-jwt");
 
-var passport = require("passport");
-var passportJWT = require("passport-jwt");
-
-var ExtractJwt = passportJWT.ExtractJwt;
-var JwtStrategy = passportJWT.Strategy;
+const ExtractJwt = passportJWT.ExtractJwt;
+const JwtStrategy = passportJWT.Strategy;
 
 const Sequelize = require('sequelize');
 
-const sequelize = new Sequelize('nodecms', 'root', '', {
+let sequelize = new Sequelize('nodecms', 'root', '', {
     host: 'localhost',
     dialect: 'mysql',
-  
+  //   define: {
+  //     timestamps: false
+  // },
     pool: {
       max: 5,
       min: 0,
@@ -40,21 +42,23 @@ const sequelize = new Sequelize('nodecms', 'root', '', {
 
 //controllers
 const AuthController = require("./app/controllers/LoginController.js")(sequelize);
-console.log('key',process.env)
+
 
 var jwtOptions = {}
 jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken(); 
-jwtOptions.secretOrKey = process.env.APP_KEY;
+jwtOptions.secretOrKey = env.parsed.APP_KEY;
 
 var strategy = new JwtStrategy(jwtOptions, function(jwt_payload, next) {
   console.log('payload received', jwt_payload);
+  //const User = require("./app/models/User.js")(sequelize);
+  console.log('mid',jwt_payload.id);
   User.findById(jwt_payload.id).then(user => {
     if (user) {
         next(null, user);
       } else {
         next(null, false);
       }
-    console.log(user)
+    console.log('user',user);
   })
 
 
@@ -75,9 +79,7 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json())
 
 app.get("/", function(req, res) {
-  User.findAll().then(users => {
-    res.json({message: "Express is up!",users});
-  })
+  res.json({message: "Express is up!"});
   
 });
 
